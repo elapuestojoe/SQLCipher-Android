@@ -4,17 +4,20 @@ import android.content.ContentProvider;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import net.sqlcipher.Cursor;
-
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
+import net.sqlcipher.Cursor;
 import net.sqlcipher.database.SQLiteDatabase;
-import net.sqlcipher.database.SQLiteQueryBuilder;
 import net.sqlcipher.database.SQLiteException;
+import net.sqlcipher.database.SQLiteQueryBuilder;
 
 import javax.crypto.SecretKey;
 
+/**
+ * Sample secure content provider
+ */
 
 public class CustomContentProvider extends ContentProvider {
 
@@ -22,10 +25,7 @@ public class CustomContentProvider extends ContentProvider {
     /* Note:Do not hard code password here. This password should be entered by the
     user or sent from the server side.  */
     private static final String password = "qwerty1234";
-    private static byte[] salt;
-
     private static SampleDB mSampleDB;
-    private static final String TAG = "CustomContentProvider.";
     private static String mEncryptedPwd;
 
     @Override
@@ -33,31 +33,18 @@ public class CustomContentProvider extends ContentProvider {
         SQLiteDatabase.loadLibs(getContext());
         Context ctx = getContext();
         mSampleDB = new SampleDB(ctx);
-
-        // If salt is not present then generate the salt and store it in shared preferences.
-        SharedPreferences sharedPref = ctx.getSharedPreferences(
-                "dt.com.securecodesqlcipher", Context.MODE_PRIVATE);
-
-        String salt_value = sharedPref.getString("salt","InvalidValue");
-        if (salt_value.equalsIgnoreCase("InvalidValue")) {
-            salt =  Crypto.generateSalt();
-            SharedPreferences.Editor editor = sharedPref.edit();
-            editor.putString("salt",Crypto.toBase64(salt));
-            editor.commit();
-        } else {
-            salt = Crypto.fromBase64(salt_value);
-        }
-        SecretKey key = Crypto.deriveKeyPbkdf2(salt, password);
-        mEncryptedPwd = Crypto.toHex(key.getEncoded());
+        // the method that sets the encrypted password to encrypt the DB;
+        setEncryptedPassword();
         return true;
     }
 
+
     @Override
-    public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+    public Cursor query(@NonNull Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
         SQLiteDatabase db = mSampleDB.getReadableDatabase(password);
 
         SQLiteQueryBuilder queryBuilder = new SQLiteQueryBuilder();
-        Cursor resultSet = null;
+        Cursor resultSet;
         final int match = ContentDescriptor.URI_MATCHER.match(uri);
         switch (match) {
             case ContentDescriptor.Table.TABLE_PATH_TOKEN:
@@ -73,7 +60,7 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public String getType(Uri uri) {
+    public String getType(@NonNull Uri uri) {
         final int match = ContentDescriptor.URI_MATCHER.match(uri);
         switch (match) {
             case ContentDescriptor.Table.TABLE_PATH_TOKEN:
@@ -86,7 +73,7 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public Uri insert(Uri uri, ContentValues values) {
+    public Uri insert(@NonNull Uri uri, ContentValues values) {
         SQLiteDatabase db = mSampleDB.getWritableDatabase(mEncryptedPwd);
         final int match = ContentDescriptor.URI_MATCHER.match(uri);
 
@@ -107,7 +94,7 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public int delete(Uri uri, String selection, String[] selectionArgs) {
+    public int delete(@NonNull Uri uri, String selection, String[] selectionArgs) {
         int count = 0;
         SQLiteDatabase db = mSampleDB.getWritableDatabase(mEncryptedPwd);
         final int match = ContentDescriptor.URI_MATCHER.match(uri);
@@ -125,7 +112,7 @@ public class CustomContentProvider extends ContentProvider {
     }
 
     @Override
-    public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+    public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
         int count = 0;
         SQLiteDatabase db = mSampleDB.getWritableDatabase(mEncryptedPwd);
         final int match = ContentDescriptor.URI_MATCHER.match(uri);
@@ -138,5 +125,24 @@ public class CustomContentProvider extends ContentProvider {
         }
         getContext().getContentResolver().notifyChange(uri, null);
         return count;
+    }
+
+
+    private void setEncryptedPassword() {
+        // If salt is not present then generate the salt and store it in shared preferences.
+        SharedPreferences sharedPref = getContext().getSharedPreferences(
+                "dt.com.securecodesqlcipher", Context.MODE_PRIVATE);
+        String salt_value = sharedPref.getString("salt", "InvalidValue");
+        byte[] salt;
+        if (salt_value.equals("InvalidValue")) {
+            salt = Crypto.generateSalt();
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("salt", Crypto.toBase64(salt));
+            editor.apply();
+        } else {
+            salt = Crypto.fromBase64(salt_value);
+        }
+        SecretKey key = Crypto.deriveKeyPbkdf2(salt, password);
+        mEncryptedPwd = Crypto.toHex(key.getEncoded());
     }
 }
