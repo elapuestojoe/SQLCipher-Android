@@ -4,10 +4,8 @@ import android.content.UriMatcher;
 import android.net.Uri;
 import android.provider.BaseColumns;
 
-/**
- * Created by ranjeet on 10/03/15.
- */
-public class ContentDescriptor {
+
+class ContentDescriptor {
 
     // utility variables
     public static final String AUTHORITY = "dbencrypto.dt.com.securecodesqlcipher.app";
@@ -17,8 +15,6 @@ public class ContentDescriptor {
 
     private ContentDescriptor() {
     }
-
-    ;
 
     // register identifying URIs for AppsCategory entity
     // the TOKEN value is associated with each URI registered

@@ -2,11 +2,13 @@ package dbencrypto.dt.com.sqlcipherexample;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.content.ContentValues;
-import android.content.DialogInterface;
-import android.net.Uri;
 import android.app.LoaderManager;
+import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Loader;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -15,12 +17,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.SimpleCursorAdapter;
-
-import android.database.Cursor;
-
-import android.content.CursorLoader;
 import android.widget.ListView;
+import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 
@@ -71,13 +69,16 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
         getContentResolver().delete(ContentDescriptor.Table.TABLE_CONTENT_URI, ContentDescriptor.Table.Cols.TAG_NAME +
                 " = ?", new String[]{name});
     }
+
     /**
      * sample code to delete data
      */
     private void queryData() {
         Cursor c = getContentResolver().query(ContentDescriptor.Table.TABLE_CONTENT_URI, null, null, null, null);
         Log.d(TAG, "count is " + c.getCount());
+        c.close();
     }
+
     /**
      * sample code to update data
      */
@@ -107,7 +108,6 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
     private void showInsertView() {
 
         LayoutInflater inflater = getLayoutInflater();
-        View dialogLayout = inflater.inflate(R.layout.activity_main, null);
         AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
                 .setTitle("Insert Data");
         AlertDialog alertDialog = builder.create();
@@ -133,7 +133,7 @@ public class MainActivity extends ListActivity implements LoaderManager.LoaderCa
                 String name = titleBox.getText().toString();
                 String addr = addrBox.getText().toString();
                 String mobNo = mobileNo.getText().toString();
-                insertData(name, addr,mobNo);
+                insertData(name, addr, mobNo);
 
             }
         });

@@ -6,9 +6,7 @@ import android.content.Context;
 import net.sqlcipher.database.SQLiteDatabase;
 import net.sqlcipher.database.SQLiteOpenHelper;
 
-/**
- * Created by ranjeet on 10/03/15.
- */
+
 public class SampleDB extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "data.db";

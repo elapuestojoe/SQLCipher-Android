@@ -18,17 +18,17 @@ import android.util.Log;
  * Referenced from android-pbe by Nelenkov
  * https://github.com/nelenkov/android-pbe/blob/master/src/org/nick/androidpbe/Crypto.java
  */
-public class Crypto {
+class Crypto {
 
     private static final String TAG = Crypto.class.getSimpleName();
 
     public static final String PBKDF2_DERIVATION_ALGORITHM = "PBKDF2WithHmacSHA1";
-    private static int KEY_LENGTH = 256;
+    private final static int KEY_LENGTH = 256;
     // minimum values recommended by PKCS#5, increase as necessary
-    private static int ITERATION_COUNT = 1000;
+    private final static int ITERATION_COUNT = 1000;
     private static final int PKCS5_SALT_LENGTH = 8;
 
-    private static SecureRandom random = new SecureRandom();
+    private final static SecureRandom random = new SecureRandom();
 
     private Crypto() {
     }
